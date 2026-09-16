@@ -65,7 +65,9 @@ function cla(signed: boolean, committerMap: CommitterMap): string {
 
     if (signed) {
         const line1 = input.getCustomAllSignedPrComment() || `All contributors have signed the CLA  ✍️ ✅`
-        const text = `${line1}<br/>${claFooter}`
+        const text = `${line1}
+
+${claFooter}`
         return text
     }
     let committersCount = 1
@@ -78,10 +80,10 @@ function cla(signed: boolean, committerMap: CommitterMap): string {
     let you = committersCount > 1 ? `you all` : `you`
     let lineOne = (input.getCustomNotSignedPrComment() || `<br/>Thank you for your submission, we really appreciate it. Like many open-source projects, we ask that $you sign our [Contributor License Agreement](${input.getPathToDocument()}) before we can accept your contribution. You can sign the CLA by just posting a Pull Request Comment same as the below format.<br/>`).replace('$you', you)
     let text = `${lineOne}
-   - - -
-   ${getPrSignComment()}
-   - - -
-   `
+
+> ${getPrSignComment()}
+
+`
 
     if (committersCount > 1 && committerMap && committerMap.signed && committerMap.notSigned) {
         text += `**${committerMap.signed.length}** out of **${committerMap.signed.length + committerMap.notSigned.length}** committers have signed the CLA.`
@@ -100,7 +102,9 @@ function cla(signed: boolean, committerMap: CommitterMap): string {
     }
 
     if (input.suggestRecheck() == 'true') {
-        text += '<sub>You can retrigger this bot by commenting **recheck** in this Pull Request. </sub>'
+        text += `You can retrigger this check by commenting **recheck cla** on this PR.
+
+`
     }
     text += claFooter
     return text

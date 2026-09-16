@@ -710,7 +710,9 @@ function dco(signed, committerMap) {
 function cla(signed, committerMap) {
     if (signed) {
         const line1 = input.getCustomAllSignedPrComment() || `All contributors have signed the CLA  ✍️ ✅`;
-        const text = `${line1}<br/>${exports.claFooter}`;
+        const text = `${line1}
+
+${exports.claFooter}`;
         return text;
     }
     let committersCount = 1;
@@ -720,10 +722,10 @@ function cla(signed, committerMap) {
     let you = committersCount > 1 ? `you all` : `you`;
     let lineOne = (input.getCustomNotSignedPrComment() || `<br/>Thank you for your submission, we really appreciate it. Like many open-source projects, we ask that $you sign our [Contributor License Agreement](${input.getPathToDocument()}) before we can accept your contribution. You can sign the CLA by just posting a Pull Request Comment same as the below format.<br/>`).replace('$you', you);
     let text = `${lineOne}
-   - - -
-   ${(0, pr_sign_comment_1.getPrSignComment)()}
-   - - -
-   `;
+
+> ${(0, pr_sign_comment_1.getPrSignComment)()}
+
+`;
     if (committersCount > 1 && committerMap && committerMap.signed && committerMap.notSigned) {
         text += `**${committerMap.signed.length}** out of **${committerMap.signed.length + committerMap.notSigned.length}** committers have signed the CLA.`;
         committerMap.signed.forEach(signedCommitter => { text += `<br/>:white_check_mark: (${signedCommitter.name})[https://github.com/${signedCommitter.name}]`; });
@@ -739,7 +741,9 @@ function cla(signed, committerMap) {
         text += ' You need a GitHub account to be able to sign the CLA. If you have already a GitHub account, please [add the email address used for this commit to your account](https://help.github.com/articles/why-are-my-commits-linked-to-the-wrong-user/#commits-are-not-linked-to-any-user).<br/>';
     }
     if (input.suggestRecheck() == 'true') {
-        text += '<sub>You can retrigger this bot by commenting **recheck** in this Pull Request. </sub>';
+        text += `You can retrigger this check by commenting **recheck cla** on this PR.
+
+`;
     }
     text += exports.claFooter;
     return text;
