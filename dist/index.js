@@ -360,7 +360,7 @@ function updateFile(sha, claFileContent, reactedCommitters) {
                 ? input
                     .getSignedCommitMessage()
                     .replace('$contributorName', github_1.context.actor)
-                    // .replace('$pullRequestNo', pullRequestNo.toString())
+                    .replace('$pullRequestNo', pullRequestNo.toString())
                     .replace('$owner', owner)
                     .replace('$repo', repo)
                 : `@${github_1.context.actor} has signed the CLA in ${owner}/${repo}#${pullRequestNo}`,
@@ -595,7 +595,7 @@ function getComment() {
                 return response.data.find(comment => comment.body.match(/.*DCO Assistant Lite bot.*/m));
             }
             else if ((0, getInputs_1.getUseDcoFlag)() === 'false') {
-                return response.data.find(comment => comment.body.match(/.*CLA Assistant Lite bot.*/m));
+                return response.data.find(comment => comment.body.includes(pullRequestCommentContent_1.claFooter));
             }
         }
         catch (error) {
@@ -655,9 +655,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.commentContent = void 0;
+exports.commentContent = exports.claFooter = void 0;
 const input = __importStar(__nccwpck_require__(3611));
 const pr_sign_comment_1 = __nccwpck_require__(6718);
+// getComment() in pullRequestComment.ts finds the bot's earlier comment by this footer, keep the two in sync
+exports.claFooter = '<sub>Supported by [NetFoundry](https://netfoundry.io), creators of [OpenZiti](https://openziti.io), [zrok](https://zrok.io), and numerous other open source projects.</sub>';
 function commentContent(signed, committerMap) {
     // using a `string` true or false purposely as github action input cannot have a boolean value
     if (input.getUseDcoFlag() == 'true') {
@@ -708,7 +710,7 @@ function dco(signed, committerMap) {
 function cla(signed, committerMap) {
     if (signed) {
         const line1 = input.getCustomAllSignedPrComment() || `All contributors have signed the CLA  ✍️ ✅`;
-        const text = `${line1}<br/><sub>Posted by the ****CLA Assistant Lite bot****.</sub>`;
+        const text = `${line1}<br/>${exports.claFooter}`;
         return text;
     }
     let committersCount = 1;
@@ -739,7 +741,7 @@ function cla(signed, committerMap) {
     if (input.suggestRecheck() == 'true') {
         text += '<sub>You can retrigger this bot by commenting **recheck** in this Pull Request. </sub>';
     }
-    text += '<sub>Posted by the **CLA Assistant Lite bot**.</sub>';
+    text += exports.claFooter;
     return text;
 }
 

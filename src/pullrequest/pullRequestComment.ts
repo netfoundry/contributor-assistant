@@ -1,7 +1,7 @@
 import { octokit } from '../octokit'
 import { context } from '@actions/github'
 import signatureWithPRComment from './signatureComment'
-import { commentContent } from './pullRequestCommentContent'
+import { claFooter, commentContent } from './pullRequestCommentContent'
 import {
   CommitterMap,
   CommittersDetails
@@ -64,7 +64,7 @@ async function getComment() {
     if (getUseDcoFlag() === 'true') {
       return response.data.find(comment => comment.body.match(/.*DCO Assistant Lite bot.*/m))
     } else if (getUseDcoFlag() === 'false') {
-      return response.data.find(comment => comment.body.match(/.*CLA Assistant Lite bot.*/m))
+      return response.data.find(comment => comment.body.includes(claFooter))
     }
   } catch (error) {
     throw new Error(`Error occured when getting  all the comments of the pull request: ${error.message}`)

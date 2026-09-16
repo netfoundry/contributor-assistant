@@ -4,6 +4,9 @@ import {
 import * as input from '../shared/getInputs'
 import { getPrSignComment } from '../shared/pr-sign-comment'
 
+// getComment() in pullRequestComment.ts finds the bot's earlier comment by this footer, keep the two in sync
+export const claFooter = '<sub>Supported by [NetFoundry](https://netfoundry.io), creators of [OpenZiti](https://openziti.io), [zrok](https://zrok.io), and numerous other open source projects.</sub>'
+
 export function commentContent(signed: boolean, committerMap: CommitterMap): string {
     // using a `string` true or false purposely as github action input cannot have a boolean value
     if (input.getUseDcoFlag() == 'true') {
@@ -62,7 +65,7 @@ function cla(signed: boolean, committerMap: CommitterMap): string {
 
     if (signed) {
         const line1 = input.getCustomAllSignedPrComment() || `All contributors have signed the CLA  ✍️ ✅`
-        const text = `${line1}<br/><sub>Posted by the ****CLA Assistant Lite bot****.</sub>`
+        const text = `${line1}<br/>${claFooter}`
         return text
     }
     let committersCount = 1
@@ -99,6 +102,6 @@ function cla(signed: boolean, committerMap: CommitterMap): string {
     if (input.suggestRecheck() == 'true') {
         text += '<sub>You can retrigger this bot by commenting **recheck** in this Pull Request. </sub>'
     }
-    text += '<sub>Posted by the **CLA Assistant Lite bot**.</sub>'
+    text += claFooter
     return text
 }
