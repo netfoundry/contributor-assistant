@@ -1,6 +1,6 @@
 import { context } from '@actions/github'
 
-import { ReactedCommitterMap } from '../interfaces'
+import { CommittersDetails, ReactedCommitterMap } from '../interfaces'
 import { GitHub } from '@actions/github/lib/utils'
 import { getDefaultOctokitClient, getPATOctokit } from '../octokit'
 
@@ -55,17 +55,40 @@ export async function updateFile(
     repo: input.getRemoteRepoName() || context.repo.repo,
     path: input.getPathToSignatures(),
     sha,
-    message: input.getSignedCommitMessage()
-      ? input
-          .getSignedCommitMessage()
-          .replace('$contributorName', context.actor)
-          .replace('$pullRequestNo', pullRequestNo.toString())
-          .replace('$owner', owner)
-          .replace('$repo', repo)
-      : `@${context.actor} has signed the CLA in ${owner}/${repo}#${pullRequestNo}`,
+    message: buildSignedCommitMessage(
+      input.getSignedCommitMessage(),
+      reactedCommitters.newSigned,
+      context.actor,
+      owner,
+      repo,
+      pullRequestNo
+    ),
     content: contentBinary,
     branch: input.getBranch()
   })
+}
+
+// actor is whoever posted the triggering comment, which on a "recheck" is not a signer
+export function buildSignedCommitMessage(
+  template: string,
+  signers: CommittersDetails[],
+  actor: string,
+  owner: string,
+  repo: string,
+  pullRequestNo: number
+): string {
+  const names: string = signers.map(signer => `@${signer.name}`).join(', ')
+  if (template) {
+    return template
+      .replace('$contributorName', names)
+      .replace('$pullRequestNo', pullRequestNo.toString())
+      .replace('$owner', owner)
+      .replace('$repo', repo)
+  }
+  const recheck: string = signers.some(signer => signer.name === actor)
+    ? ''
+    : ` (recheck by @${actor})`
+  return `CLA signed by ${names} in ${owner}/${repo}#${pullRequestNo}${recheck}`
 }
 
 function isRemoteRepoOrOrgConfigured(): boolean {

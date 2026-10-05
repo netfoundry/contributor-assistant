@@ -310,7 +310,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateFile = exports.createFile = exports.getFileContent = void 0;
+exports.buildSignedCommitMessage = exports.updateFile = exports.createFile = exports.getFileContent = void 0;
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(3258);
 const input = __importStar(__nccwpck_require__(3611));
@@ -356,20 +356,29 @@ function updateFile(sha, claFileContent, reactedCommitters) {
             repo: input.getRemoteRepoName() || github_1.context.repo.repo,
             path: input.getPathToSignatures(),
             sha,
-            message: input.getSignedCommitMessage()
-                ? input
-                    .getSignedCommitMessage()
-                    .replace('$contributorName', github_1.context.actor)
-                    .replace('$pullRequestNo', pullRequestNo.toString())
-                    .replace('$owner', owner)
-                    .replace('$repo', repo)
-                : `@${github_1.context.actor} has signed the CLA in ${owner}/${repo}#${pullRequestNo}`,
+            message: buildSignedCommitMessage(input.getSignedCommitMessage(), reactedCommitters.newSigned, github_1.context.actor, owner, repo, pullRequestNo),
             content: contentBinary,
             branch: input.getBranch()
         });
     });
 }
 exports.updateFile = updateFile;
+// actor is whoever posted the triggering comment, which on a "recheck" is not a signer
+function buildSignedCommitMessage(template, signers, actor, owner, repo, pullRequestNo) {
+    const names = signers.map(signer => `@${signer.name}`).join(', ');
+    if (template) {
+        return template
+            .replace('$contributorName', names)
+            .replace('$pullRequestNo', pullRequestNo.toString())
+            .replace('$owner', owner)
+            .replace('$repo', repo);
+    }
+    const recheck = signers.some(signer => signer.name === actor)
+        ? ''
+        : ` (recheck by @${actor})`;
+    return `CLA signed by ${names} in ${owner}/${repo}#${pullRequestNo}${recheck}`;
+}
+exports.buildSignedCommitMessage = buildSignedCommitMessage;
 function isRemoteRepoOrOrgConfigured() {
     let isRemoteRepoOrOrgConfigured = false;
     if ((input === null || input === void 0 ? void 0 : input.getRemoteRepoName()) || input.getRemoteOrgName()) {
